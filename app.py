@@ -5,45 +5,73 @@ import base64
 import time
 from datetime import datetime
 
-# --- 1. CLEAN CLINICAL UI CONFIGURATION ---
+# --- 1. CORE UI CONFIGURATION ---
 st.set_page_config(page_title="Cognitive Diagnostic Suite", layout="centered", initial_sidebar_state="collapsed")
 
-# Force Light Theme & TreadWill Minimalist Aesthetics
+# Aggressive CSS to force TreadWill aesthetics and PREVENT invisible text bugs
 st.markdown("""
     <style>
-    /* Base Theme Override */
-    .stApp { background-color: #F8FAFC; color: #1E293B; font-family: 'Inter', sans-serif; }
-    h1, h2, h3 { color: #0F172A; text-align: center; font-weight: 700; margin-bottom: 20px; }
-    p { font-size: 16px; line-height: 1.6; text-align: center; }
+    /* Force Light Mode Background & Text */
+    .stApp { background-color: #F8FAFC !important; }
+    h1, h2, h3, p, span, div { color: #0F172A !important; font-family: 'Inter', sans-serif; }
     
-    /* Input & Button Styling */
-    .stTextInput>div>div>input { background-color: #FFFFFF; color: #1E293B; border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px; }
-    .stButton>button {
-        background-color: #2563EB; color: #FFFFFF; border-radius: 8px;
-        padding: 12px 24px; font-size: 16px; font-weight: 600; border: none; width: 100%; transition: 0.2s ease;
+    /* Fix Checkbox Visibility */
+    div[data-testid="stCheckbox"] > label > div > p {
+        color: #0F172A !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
     }
-    .stButton>button:hover { background-color: #1D4ED8; color: #FFFFFF; }
+    
+    /* Input Fields */
+    .stTextInput>div>div>input { 
+        background-color: #FFFFFF !important; 
+        color: #0F172A !important; 
+        border: 2px solid #CBD5E1 !important; 
+        border-radius: 8px !important; 
+        padding: 12px !important; 
+    }
+    
+    /* Standardized Buttons */
+    .stButton>button {
+        background-color: #2563EB !important; 
+        color: #FFFFFF !important; 
+        border-radius: 8px !important;
+        padding: 14px 24px !important; 
+        font-size: 16px !important; 
+        font-weight: 600 !important; 
+        border: none !important; 
+        width: 100% !important; 
+        transition: 0.2s ease !important;
+    }
+    .stButton>button:hover { background-color: #1D4ED8 !important; }
+    
+    /* Info Box (replaces standard consent box) */
+    div[data-testid="stWebsocket"] { display: none; }
+    .consent-card {
+        background-color: #EFF6FF; border: 1px solid #BFDBFE; border-left: 6px solid #3B82F6;
+        padding: 20px; border-radius: 8px; margin-bottom: 20px;
+    }
     
     /* Gaze Stimulus Canvas */
     .gaze-canvas {
         position: relative; width: 100%; height: 400px; 
-        background-color: #E2E8F0; border: 2px solid #CBD5E1; border-radius: 12px; overflow: hidden; margin: 20px 0;
+        background-color: #E2E8F0; border: 2px solid #94A3B8; border-radius: 12px; overflow: hidden; margin: 20px 0;
     }
     .auto-dot {
         position: absolute; width: 24px; height: 24px; 
         background-color: #EF4444; border-radius: 50%; transform: translate(-50%, -50%);
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
     }
     .center-cross {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        color: #64748B; font-size: 40px; font-weight: 300;
+        color: #475569 !important; font-size: 40px; font-weight: 300;
     }
     
     /* Grid for Memory Task */
     .grid-container {
         display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 20px auto;
     }
-    .grid-tile { height: 80px; border-radius: 8px; transition: background-color 0.1s; }
+    .grid-tile { height: 80px; border-radius: 8px; transition: background-color 0.1s; border: 1px solid #94A3B8;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -91,10 +119,8 @@ def load_camera(filename):
 
 # --- 4. JS AUTOMATION TRIGGER ---
 def auto_advance(delay_ms):
-    """Clicks a hidden Streamlit button after a set time to advance tasks without user input."""
-    st.markdown("""
-        <style>div.stButton > button[title="AUTO"] { display: none; }</style>
-    """, unsafe_allow_html=True)
+    """Clicks a hidden Streamlit button to advance tasks without user input."""
+    st.markdown("""<style>div.stButton > button[title="AUTO"] { display: none !important; }</style>""", unsafe_allow_html=True)
     components.html(f"""
         <script>
         setTimeout(function() {{
@@ -105,49 +131,57 @@ def auto_advance(delay_ms):
     """, height=0)
 
 # =====================================================================
-# UI ROUTING (CLEAN & MINIMAL)
+# UI ROUTING (TREADWILL STYLE)
 # =====================================================================
 
+# --- PHASE 1: LOGIN ---
 if st.session_state.phase == "LOGIN":
-    st.title("Cognitive Diagnostic Portal")
-    st.write("Clinical Data Acquisition Environment")
+    st.markdown("<h1>Cognitive Diagnostic Portal</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Clinical Data Acquisition Environment</p>", unsafe_allow_html=True)
+    st.write("---")
     
-    # Using native containers to prevent CSS clipping errors
-    with st.container():
-        st.write("---")
-        token = st.text_input("Enter Participant Token:")
-        if st.button("Unlock Assessment Suite"):
-            if token.strip():
-                st.session_state.subject_id = token.strip()
-                st.session_state.phase = "CONSENT"
-                st.rerun()
-            else:
-                st.error("Please enter a valid token.")
+    token = st.text_input("Enter Participant Token:", placeholder="e.g. P001")
+    if st.button("Unlock Assessment Suite"):
+        if token.strip():
+            st.session_state.subject_id = token.strip()
+            st.session_state.phase = "CONSENT"
+            st.rerun()
+        else:
+            st.error("Please enter a valid token.")
 
+# --- PHASE 2: CONSENT ---
 elif st.session_state.phase == "CONSENT":
-    st.title("Informed Consent")
-    with st.container():
-        st.info("""
-        **Study Parameters:**
-        1. Your webcam will record your eye movements silently.
-        2. No recording preview is shown to prevent visual bias.
-        3. All data is anonymized.
-        """)
-        c1 = st.checkbox("I authorize silent camera access.")
-        c2 = st.checkbox("I authorize anonymized data collection.")
-        if st.button("Accept & Continue"):
-            if c1 and c2:
-                log_event("CONSENT_GIVEN")
-                st.session_state.phase = "CALIB_INTRO"
-                st.rerun()
-            else:
-                st.warning("Please check both boxes.")
+    st.markdown("<h1>Informed Consent</h1>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="consent-card">
+        <h4 style="margin-top: 0; color: #1E3A8A !important;">Study Parameters:</h4>
+        <ol style="color: #1E40AF; margin-bottom: 0;">
+            <li>Your webcam will record your eye movements silently at 30 frames per second.</li>
+            <li>No recording preview is shown to prevent visual bias and self-correction loops.</li>
+            <li>All exported interaction arrays are permanently anonymized.</li>
+        </ol>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    c1 = st.checkbox("I authorize silent camera access for biometric parsing.")
+    c2 = st.checkbox("I authorize anonymized data collection for research use.")
+    
+    st.write("")
+    if st.button("Accept & Continue"):
+        if c1 and c2:
+            log_event("CONSENT_GIVEN")
+            st.session_state.phase = "CALIB_INTRO"
+            st.rerun()
+        else:
+            st.error("You must select both checkboxes to proceed.")
 
+# --- PHASE 3: CALIBRATION ---
 elif st.session_state.phase == "CALIB_INTRO":
-    st.title("Task 1: Optical Calibration")
-    st.write("Place your device on a stable surface. Sit 30–35 cm from the screen.")
-    st.write("👉 **Keep your head perfectly still. Follow the red dot purely with your eyes.**")
-    st.write("*(This task will advance automatically. Do not click anything.)*")
+    st.markdown("<h1>Task 1: Optical Calibration</h1>", unsafe_allow_html=True)
+    st.write("Place your device on a stable surface. Sit **30–35 cm** from the screen.")
+    st.markdown("👉 **Keep your head perfectly still. Follow the red dot purely with your eyes.**")
+    st.info("This task advances automatically. Do not click anything once it starts.")
     
     if st.button("Start Calibration"):
         log_event("CALIB_START")
@@ -162,7 +196,6 @@ elif st.session_state.phase == "PLAY_CALIB":
     
     st.markdown(f'<div class="gaze-canvas"><div class="auto-dot" style="left: {x}; top: {y};"></div></div>', unsafe_allow_html=True)
     
-    # Auto-advances every 1500ms
     auto_advance(1500)
     if st.button("AUTO", help="AUTO"):
         log_event(f"CALIB_POINT_{idx}", f"X:{x}, Y:{y}")
@@ -173,15 +206,17 @@ elif st.session_state.phase == "PLAY_CALIB":
             st.session_state.phase = "ANTI_INTRO"
         st.rerun()
 
+# --- PHASE 4: ANTI-SACCADE ---
 elif st.session_state.phase == "ANTI_INTRO":
-    st.title("Task 2: Inhibitory Challenge")
+    st.markdown("<h1>Task 2: Inhibitory Challenge</h1>", unsafe_allow_html=True)
     st.markdown("""
-    A central cross (**+**) will appear, followed by a red dot on the **Left** or **Right**.
+    A central cross (**+**) will appear, followed by a red dot flashing on the **Left** or **Right**.
+    
     👉 **CRITICAL:** Instantly look in the **EXACT OPPOSITE DIRECTION** of the dot.
     """)
-    st.write("*(This task will advance automatically.)*")
+    st.info("This task advances automatically.")
     
-    if st.button("Start Task 2"):
+    if st.button("Start Inhibitory Task"):
         log_event("ANTI_START")
         st.session_state.phase = "PLAY_ANTI"
         st.rerun()
@@ -194,7 +229,6 @@ elif st.session_state.phase == "PLAY_ANTI":
     
     st.markdown(f'<div class="gaze-canvas"><div class="center-cross">+</div><div class="auto-dot" style="left: {x}; top: {y};"></div></div>', unsafe_allow_html=True)
     
-    # Auto-advances every 1800ms
     auto_advance(1800)
     if st.button("AUTO", help="AUTO"):
         log_event(f"ANTI_TRIAL_{idx}", f"Flashed: {x}")
@@ -202,30 +236,62 @@ elif st.session_state.phase == "PLAY_ANTI":
             st.session_state.step_anti += 1
         else:
             components.html("<script>window.parent.killRecorder();</script>", height=0)
+            st.session_state.phase = "PURSUIT_INTRO"
+        st.rerun()
+
+# --- PHASE 5: SMOOTH PURSUIT ---
+elif st.session_state.phase == "PURSUIT_INTRO":
+    st.markdown("<h1>Task 3: Smooth Pursuit</h1>", unsafe_allow_html=True)
+    st.write("Keep your head perfectly steady. Track the moving dot continuously with your eyes as it sweeps horizontally.")
+    st.info("This task advances automatically.")
+    
+    if st.button("Start Pursuit Task"):
+        log_event("PURSUIT_START")
+        st.session_state.phase = "PLAY_PURSUIT"
+        st.rerun()
+
+elif st.session_state.phase == "PLAY_PURSUIT":
+    load_camera("3_smooth_pursuit")
+    pursuit_coords = ["10%", "25%", "40%", "55%", "70%", "85%", "70%", "55%", "40%", "25%", "10%"]
+    idx = st.session_state.step_pursuit
+    x = pursuit_coords[idx]
+    
+    st.markdown(f'<div class="gaze-canvas"><div class="auto-dot" style="left: {x}; top: 50%;"></div></div>', unsafe_allow_html=True)
+    
+    auto_advance(800)
+    if st.button("AUTO", help="AUTO"):
+        log_event(f"PURSUIT_STEP_{idx}", f"X: {x}")
+        if idx < 10:
+            st.session_state.step_pursuit += 1
+        else:
+            components.html("<script>window.parent.killRecorder();</script>", height=0)
             st.session_state.phase = "NBACK_INTRO"
         st.rerun()
 
+# --- PHASE 6: N-BACK (MANUAL INTERACTION) ---
 elif st.session_state.phase == "NBACK_INTRO":
-    st.title("Task 3: Spatial Memory (2-Back)")
+    st.markdown("<h1>Task 4: Spatial Memory (2-Back)</h1>", unsafe_allow_html=True)
     st.markdown("""
     A blue square will jump across a grid.
-    👉 Click **MATCH DETECTED** if the square lands in the **exact same spot** it was in **2 steps ago**.
+    
+    👉 Click **MATCH DETECTED** if the square lands in the **exact same spot** it was in **2 steps ago**. Otherwise, click **Next**.
     """)
+    
     if st.button("Start Memory Task"):
         log_event("NBACK_START")
         st.session_state.phase = "PLAY_NBACK"
         st.rerun()
 
 elif st.session_state.phase == "PLAY_NBACK":
-    load_camera("3_spatial_memory")
+    load_camera("4_spatial_memory")
     seq = [3, 6, 9, 6, 2, 9, 2, 4, 7]
     ans = [0, 0, 0, 1, 0, 0, 1, 0, 0]
     idx = st.session_state.step_nback
     
     html = "<div class='grid-container'>"
     for i in range(1, 10):
-        color = "#3B82F6" if i == seq[idx] else "#CBD5E1"
-        html += f"<div class='grid-tile' style='background-color: {color};'></div>"
+        color = "#3B82F6" if i == seq[idx] else "#F1F5F9"
+        html += f"<div class='grid-tile' style='background-color: {color} !important;'></div>"
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
     
@@ -249,9 +315,16 @@ elif st.session_state.phase == "PLAY_NBACK":
                 st.session_state.phase = "EXPORT"
             st.rerun()
 
+# --- PHASE 7: EXPORT ---
 elif st.session_state.phase == "EXPORT":
-    st.title("Assessment Complete")
-    st.success("Session data successfully recorded.")
+    st.markdown("<h1>Assessment Complete</h1>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="consent-card" style="border-left-color: #10B981; background-color: #ECFDF5; border-color: #A7F3D0;">
+        <h4 style="margin-top: 0; color: #065F46 !important;">Session data successfully recorded.</h4>
+        <p style="color: #047857; margin-bottom: 0;">Your behavioral metrics and asynchronous camera logs are complete.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     payload = {
         "subject_id": st.session_state.subject_id,
@@ -261,7 +334,7 @@ elif st.session_state.phase == "EXPORT":
     }
     
     b64 = base64.b64encode(json.dumps(payload, indent=4).encode()).decode()
-    st.write("Click below to download your log file. Return this file along with the downloaded video tracks.")
     
-    href = f'<a href="data:file/json;base64,{b64}" download="{st.session_state.subject_id}_metrics.json"><button style="width:100%; padding:14px; background-color:#10B981; color:white; border-radius:6px; border:none; font-weight:bold; cursor:pointer;">Download Session Logs (.JSON)</button></a>'
+    st.write("Click below to download your JSON log file. Return this file along with the downloaded video tracks.")
+    href = f'<a href="data:file/json;base64,{b64}" download="{st.session_state.subject_id}_metrics.json"><button style="width:100%; padding:14px; background-color:#10B981 !important; color:white !important; border-radius:8px; border:none; font-weight:bold; cursor:pointer;">Download Session Logs (.JSON)</button></a>'
     st.markdown(href, unsafe_allow_html=True)
