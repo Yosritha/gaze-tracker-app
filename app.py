@@ -22,7 +22,7 @@ if 'phase' not in st.session_state:
 # --- 2. PHASE ROUTING ---
 if st.session_state.phase == "LOGIN":
     st.markdown("<h1>Cognitive Diagnostic Portal</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>IIT Tirupati EE Department - Clinical Acquisition</p><hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Clinical Data Acquisition Environment</p><hr>", unsafe_allow_html=True)
     
     token = st.text_input("Enter Participant Token:")
     if st.button("Unlock Assessment Suite"):
@@ -65,7 +65,7 @@ elif st.session_state.phase == "ENGINE":
             #canvas-container {{ position: relative; width: 600px; height: 400px; background-color: #1E293B; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }}
             #ui-layer {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 10; padding: 20px; box-sizing: border-box; }}
             #stimulus-layer {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }}
-            .target-dot {{ position: absolute; width: 24px; height: 24px; background-color: #EF4444; border-radius: 50%; transform: translate(-50%, -50%); display: none; }}
+            .target-dot {{ position: absolute; width: 24px; height: 24px; background-color: #EF4444; border-radius: 50%; transform: translate(-50%, -50%); display: none; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); }}
             .crosshair {{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #94A3B8; font-size: 32px; display: none; }}
             button {{ margin-top: 20px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #3B82F6; color: white; border: none; border-radius: 6px; }}
             button:hover {{ background-color: #2563EB; }}
@@ -89,12 +89,10 @@ elif st.session_state.phase == "ENGINE":
             let mediaRecorder;
             let recordedChunks = [];
             let eventLogs = [];
-            let currentPhase = 0;
             
             const uiLayer = document.getElementById('ui-layer');
             const title = document.getElementById('msg-title');
             const desc = document.getElementById('msg-desc');
-            const btn = document.getElementById('btn-action');
             const dot = document.getElementById('dot');
             const cross = document.getElementById('cross');
 
@@ -196,7 +194,7 @@ elif st.session_state.phase == "ENGINE":
                 aJson.download = subject_id + "_metrics.json";
                 aJson.click();
                 
-                desc.innerText = "Files downloaded. You may close this window.";
+                desc.innerText = "Files downloaded. You may close this window and return the files.";
             }}
 
             // Bootstrap
